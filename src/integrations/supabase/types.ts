@@ -14,16 +14,130 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      project_applications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          project_id: string
+          status: Database["public"]["Enums"]["application_status"]
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          project_id: string
+          status?: Database["public"]["Enums"]["application_status"]
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          project_id?: string
+          status?: Database["public"]["Enums"]["application_status"]
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_applications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string
+          deadline: string | null
+          description: string
+          domain: string
+          file_url: string | null
+          id: string
+          skills_required: string[]
+          status: Database["public"]["Enums"]["project_status"]
+          teacher_id: string
+          team_size: number
+          title: string
+          updated_at: string
+          vacancies: number
+        }
+        Insert: {
+          created_at?: string
+          deadline?: string | null
+          description: string
+          domain: string
+          file_url?: string | null
+          id?: string
+          skills_required?: string[]
+          status?: Database["public"]["Enums"]["project_status"]
+          teacher_id: string
+          team_size: number
+          title: string
+          updated_at?: string
+          vacancies: number
+        }
+        Update: {
+          created_at?: string
+          deadline?: string | null
+          description?: string
+          domain?: string
+          file_url?: string | null
+          id?: string
+          skills_required?: string[]
+          status?: Database["public"]["Enums"]["project_status"]
+          teacher_id?: string
+          team_size?: number
+          title?: string
+          updated_at?: string
+          vacancies?: number
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "student" | "teacher" | "admin"
+      application_status: "pending" | "accepted" | "rejected"
+      project_status: "draft" | "active" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +264,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["student", "teacher", "admin"],
+      application_status: ["pending", "accepted", "rejected"],
+      project_status: ["draft", "active", "completed", "cancelled"],
+    },
   },
 } as const

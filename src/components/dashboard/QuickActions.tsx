@@ -1,5 +1,6 @@
 import { DoorOpen, AlertCircle, Package, FolderGit2, MessageCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 const actions = [
   {
@@ -8,6 +9,7 @@ const actions = [
     description: "Update room status",
     color: "text-primary",
     bg: "bg-primary/10",
+    path: "/classrooms",
   },
   {
     icon: AlertCircle,
@@ -15,6 +17,7 @@ const actions = [
     description: "Maintenance request",
     color: "text-warning",
     bg: "bg-warning/10",
+    path: "/maintenance",
   },
   {
     icon: Package,
@@ -22,6 +25,7 @@ const actions = [
     description: "Report items",
     color: "text-accent",
     bg: "bg-accent/10",
+    path: "/lost-found",
   },
   {
     icon: FolderGit2,
@@ -29,6 +33,7 @@ const actions = [
     description: "Browse repository",
     color: "text-info",
     bg: "bg-info/10",
+    path: "/projects",
   },
   {
     icon: MessageCircle,
@@ -36,10 +41,13 @@ const actions = [
     description: "Get assistance",
     color: "text-purple-600",
     bg: "bg-purple-100",
+    path: "/chatbot",
   },
 ];
 
 export const QuickActions = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-lg">Quick Actions</h3>
@@ -48,6 +56,7 @@ export const QuickActions = () => {
           <Card
             key={action.label}
             className="p-4 cursor-pointer card-hover group border-border/50"
+            onClick={() => navigate(action.path)}
           >
             <div className={`${action.bg} ${action.color} w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
               <action.icon className="h-6 w-6" />
