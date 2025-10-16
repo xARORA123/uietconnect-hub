@@ -4,79 +4,60 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Shield, AlertTriangle } from 'lucide-react';
+import { Shield, Loader2 } from 'lucide-react';
 
 const SignupAdmin = () => {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    adminPassphrase: '',
-  });
+  const [formData, setFormData] = useState({ fullName: '', email: '', password: '', adminAccessCode: '' });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Check admin passphrase (dev only)
-    const devAdminSecret = import.meta.env.VITE_DEV_ADMIN_SECRET || 'uiet-admin-2024';
-    
-    if (formData.adminPassphrase !== devAdminSecret) {
-      toast({
-        title: "Invalid passphrase",
-        description: "The admin passphrase you entered is incorrect.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      // Create user account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // Verify admin access code
+      const validCode = import.meta.env.VITE_ADMIN_ACCESS_CODE;
+      if (formData.adminAccessCode !== validCode) {
+        throw new Error('Invalid admin access code. Unauthorized to register as Admin.');
+      }
+
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: formData.fullName,
-          },
-        },
+          emailRedirectTo: `${window.location.origin}/`,
+          data: { full_name: formData.fullName }
+        }
       });
 
-      if (authError) throw authError;
+      if (error) throw error;
 
-      if (authData.user) {
-        // Assign admin role
+      // Assign admin role
+      if (data.user) {
         const { error: roleError } = await supabase
           .from('user_roles')
-          .insert({
-            user_id: authData.user.id,
-            role: 'admin',
-          });
-
-        if (roleError) throw roleError;
-
-        toast({
-          title: "Admin account created!",
-          description: "Welcome to UIET Connect admin panel.",
-        });
-
-        navigate('/admin/dashboard');
+          .insert({ user_id: data.user.id, role: 'admin' });
+        
+        if (roleError) {
+          console.error('Error assigning admin role:', roleError);
+          throw new Error('Failed to assign admin role');
+        }
       }
+
+      toast({ 
+        title: "Admin account created!", 
+        description: "Welcome to UIET Connect Admin Panel" 
+      });
+      navigate('/admin/dashboard');
     } catch (error: any) {
-      toast({
-        title: "Signup failed",
-        description: error.message,
-        variant: "destructive",
+      toast({ 
+        title: "Signup failed", 
+        description: error.message, 
+        variant: "destructive" 
       });
     } finally {
       setLoading(false);
@@ -85,107 +66,66 @@ const SignupAdmin = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md animate-fade-in">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            <div className="h-12 w-12 rounded-lg bg-destructive/10 flex items-center justify-center">
-              <Shield className="h-6 w-6 text-destructive" />
-            </div>
+      <Card className="w-full max-w-md border-primary/20">
+        <CardHeader>
+          <div className="flex items-center justify-center mb-2">
+            <Shield className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl text-center">Create Admin Account</CardTitle>
-          <CardDescription className="text-center">
-            Restricted access - Admin credentials required
-          </CardDescription>
+          <CardTitle className="text-center">Admin Signup</CardTitle>
+          <p className="text-sm text-muted-foreground text-center">Access code required</p>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Development Only:</strong> In production, admin accounts must be created via the backend console. This signup flow is for development purposes only.
-              </AlertDescription>
-            </Alert>
-            
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name *</Label>
-              <Input
-                id="fullName"
-                placeholder="Admin Name"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                required
-                disabled={loading}
+            <div>
+              <Label>Full Name</Label>
+              <Input 
+                value={formData.fullName} 
+                onChange={(e) => setFormData({...formData, fullName: e.target.value})} 
+                required 
               />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="admin@university.edu"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-                disabled={loading}
+            <div>
+              <Label>Email</Label>
+              <Input 
+                type="email" 
+                value={formData.email} 
+                onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                required 
               />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                minLength={8}
-                required
-                disabled={loading}
+            <div>
+              <Label>Password</Label>
+              <Input 
+                type="password" 
+                value={formData.password} 
+                onChange={(e) => setFormData({...formData, password: e.target.value})} 
+                required 
               />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="adminPassphrase">Admin Passphrase *</Label>
-              <Input
-                id="adminPassphrase"
-                type="password"
-                placeholder="Dev passphrase"
-                value={formData.adminPassphrase}
-                onChange={(e) => setFormData({ ...formData, adminPassphrase: e.target.value })}
-                required
-                disabled={loading}
+            <div>
+              <Label>Admin Access Code</Label>
+              <Input 
+                type="password" 
+                value={formData.adminAccessCode} 
+                onChange={(e) => setFormData({...formData, adminAccessCode: e.target.value})} 
+                placeholder="Enter admin access code"
+                required 
               />
-              <p className="text-xs text-muted-foreground">
-                Contact system administrator for the passphrase
-              </p>
             </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button
-              type="submit"
-              className="w-full"
-              variant="destructive"
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating admin account...
+                  Creating account...
                 </>
               ) : (
-                <>
-                  <Shield className="mr-2 h-4 w-4" />
-                  Create Admin Account
-                </>
+                'Create Admin Account'
               )}
             </Button>
-            <div className="text-sm text-center text-muted-foreground">
-              <Link to="/login" className="text-primary hover:underline">
-                Back to login
-              </Link>
-            </div>
-          </CardFooter>
+            <p className="text-sm text-center text-muted-foreground">
+              Already have an account? <Link to="/login" className="text-primary hover:underline">Login</Link>
+            </p>
+          </CardContent>
         </form>
       </Card>
     </div>

@@ -17,7 +17,9 @@ import SignupUser from "./pages/auth/SignupUser";
 import SignupAdmin from "./pages/auth/SignupAdmin";
 import Profile from "./pages/Profile";
 import Forbidden from "./pages/Forbidden";
+import Unauthorized from "./pages/Unauthorized";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserDashboard from "./pages/user/UserDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,26 +34,25 @@ const App = () => (
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignupUser />} />
+            <Route path="/signup/user" element={<SignupUser />} />
             <Route path="/signup/admin" element={<SignupAdmin />} />
             <Route path="/forbidden" element={<Forbidden />} />
-            
+            <Route path="/unauthorized" element={<Unauthorized />} />
+
             {/* Protected routes */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/classrooms" element={<ProtectedRoute><Classrooms /></ProtectedRoute>} />
             <Route path="/lost-found" element={<ProtectedRoute><LostFound /></ProtectedRoute>} />
             <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
             <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetails /></ProtectedRoute>} />
+            <Route path="/projects/create" element={<ProtectedRoute><CreateProject /></ProtectedRoute>} />
+            <Route path="/teacher/applications" element={<ProtectedRoute><TeacherApplications /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             
-            {/* Teacher routes */}
-            <Route path="/projects/create" element={<ProtectedRoute requiredRole="teacher"><CreateProject /></ProtectedRoute>} />
-            <Route path="/teacher/applications" element={<ProtectedRoute requiredRole="teacher"><TeacherApplications /></ProtectedRoute>} />
-            
-            {/* Admin routes */}
+            {/* Role-specific routes */}
             <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-            
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/user/dashboard" element={<ProtectedRoute requiredRole="student"><UserDashboard /></ProtectedRoute>} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

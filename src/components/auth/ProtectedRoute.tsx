@@ -9,10 +9,10 @@ interface ProtectedRouteProps {
   requireAuth?: boolean;
 }
 
-export const ProtectedRoute = ({ 
-  children, 
+export const ProtectedRoute = ({
+  children,
   requiredRole,
-  requireAuth = true 
+  requireAuth = true
 }: ProtectedRouteProps) => {
   const { user, role, loading } = useAuth();
 
@@ -32,7 +32,7 @@ export const ProtectedRoute = ({
   }
 
   if (requiredRole && role !== requiredRole) {
-    return <Navigate to="/forbidden" replace />;
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return <>{children}</>;

@@ -69,21 +69,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const refreshProfile = async () => {
-    if (user?.id) {
+    if (user) {
       await fetchProfile(user.id);
       await fetchRole(user.id);
     }
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
+      async (event, currentSession) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
-          // Defer Supabase calls with setTimeout to avoid deadlock
+          // Defer profile/role fetching
           setTimeout(() => {
             fetchProfile(currentSession.user.id);
             fetchRole(currentSession.user.id);
@@ -92,20 +92,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setProfile(null);
           setRole(null);
         }
+
+        setLoading(false);
       }
     );
 
-    // THEN check for existing session
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
-      
+
       if (currentSession?.user) {
-        fetchProfile(currentSession.user.id).finally(() => setLoading(false));
+        fetchProfile(currentSession.user.id);
         fetchRole(currentSession.user.id);
-      } else {
-        setLoading(false);
       }
+
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -113,17 +115,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
+      await supabase.auth.signOut();
       setUser(null);
       setSession(null);
       setProfile(null);
       setRole(null);
-      
       toast({
-        title: "Signed out successfully",
-        description: "You have been logged out of your account.",
+        title: "Signed out",
+        description: "You have been successfully signed out.",
       });
     } catch (error: any) {
       toast({
@@ -135,9 +134,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user, session, profile, role, loading, signOut, refreshProfile }}
-    >
+    <AuthContext.Provider value={{ user, session, profile, role, loading, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

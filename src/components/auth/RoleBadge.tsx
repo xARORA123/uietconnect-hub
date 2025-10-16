@@ -32,7 +32,7 @@ export const RoleBadge = ({ role, size = 'md' }: RoleBadgeProps) => {
 
   return (
     <Badge variant="outline" className={className}>
-      <Icon className={iconSize} />
+      <Icon className={`${iconSize} mr-1`} />
       <span>{label}</span>
     </Badge>
   );
