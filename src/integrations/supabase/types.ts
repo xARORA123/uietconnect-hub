@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          department: string | null
+          email: string
+          full_name: string
+          id: string
+          student_id: string | null
+          updated_at: string
+          year: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          department?: string | null
+          email: string
+          full_name: string
+          id: string
+          student_id?: string | null
+          updated_at?: string
+          year?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          department?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          student_id?: string | null
+          updated_at?: string
+          year?: string | null
+        }
+        Relationships: []
+      }
       project_applications: {
         Row: {
           created_at: string
