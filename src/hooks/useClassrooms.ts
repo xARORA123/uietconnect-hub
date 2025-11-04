@@ -39,13 +39,13 @@ export const useClassrooms = () => {
     queryKey: ['classrooms'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('classrooms')
+        .from('classrooms' as any)
         .select('*')
         .order('building', { ascending: true })
         .order('name', { ascending: true });
 
       if (error) throw error;
-      return data as Classroom[];
+      return data as unknown as Classroom[];
     },
   });
 
@@ -79,13 +79,13 @@ export const useClassroomHistory = (classroomId: string) => {
     queryKey: ['classroom-history', classroomId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('classroom_history')
+        .from('classroom_history' as any)
         .select('*')
         .eq('classroom_id', classroomId)
         .order('at', { ascending: false });
 
       if (error) throw error;
-      return data as ClassroomHistory[];
+      return data as unknown as ClassroomHistory[];
     },
   });
 
@@ -109,7 +109,7 @@ export const useOccupyClassroom = () => {
     }) => {
       // Update classroom status
       const { error: updateError } = await supabase
-        .from('classrooms')
+        .from('classrooms' as any)
         .update({
           status: 'occupied',
           occupied_by_id: user?.id,
@@ -123,7 +123,7 @@ export const useOccupyClassroom = () => {
 
       // Add history entry
       const { error: historyError } = await supabase
-        .from('classroom_history')
+        .from('classroom_history' as any)
         .insert({
           classroom_id: classroomId,
           action: 'occupied',
@@ -161,7 +161,7 @@ export const useVacateClassroom = () => {
     mutationFn: async ({ classroomId }: { classroomId: string }) => {
       // Update classroom status
       const { error: updateError } = await supabase
-        .from('classrooms')
+        .from('classrooms' as any)
         .update({
           status: 'free',
           occupied_by_id: null,
@@ -175,7 +175,7 @@ export const useVacateClassroom = () => {
 
       // Add history entry
       const { error: historyError } = await supabase
-        .from('classroom_history')
+        .from('classroom_history' as any)
         .insert({
           classroom_id: classroomId,
           action: 'vacated',
