@@ -2,77 +2,32 @@ import { Navbar } from "@/components/layout/Navbar";
 import { ClassroomCard } from "@/components/classrooms/ClassroomCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Search, Filter } from "lucide-react";
-import { useState } from "react";
+import { Search } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useClassrooms } from "@/hooks/useClassrooms";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Classrooms = () => {
   const [filter, setFilter] = useState<"all" | "free" | "occupied">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const { classrooms, isLoading } = useClassrooms();
 
-  const classrooms = [
-    {
-      name: "CSE-101",
-      building: "Academic Block A",
-      floor: 1,
-      capacity: 60,
-      status: "free" as const,
-      lastUpdated: "10 mins ago",
-      updatedBy: "John Doe",
-    },
-    {
-      name: "CSE-201",
-      building: "Academic Block A",
-      floor: 2,
-      capacity: 80,
-      status: "occupied" as const,
-      lastUpdated: "1 hour ago",
-      updatedBy: "Jane Smith",
-    },
-    {
-      name: "ME-101",
-      building: "Academic Block B",
-      floor: 1,
-      capacity: 50,
-      status: "free" as const,
-      lastUpdated: "5 mins ago",
-      updatedBy: "Mike Johnson",
-    },
-    {
-      name: "EE-201",
-      building: "Academic Block B",
-      floor: 2,
-      capacity: 70,
-      status: "occupied" as const,
-      lastUpdated: "30 mins ago",
-      updatedBy: "Sarah Wilson",
-    },
-    {
-      name: "CSE-301",
-      building: "Academic Block A",
-      floor: 3,
-      capacity: 90,
-      status: "free" as const,
-      lastUpdated: "2 hours ago",
-      updatedBy: "Alex Brown",
-    },
-    {
-      name: "LAB-101",
-      building: "Lab Complex",
-      floor: 1,
-      capacity: 40,
-      status: "occupied" as const,
-      lastUpdated: "15 mins ago",
-      updatedBy: "Emily Davis",
-    },
-  ];
+  const filteredClassrooms = useMemo(() => {
+    if (!classrooms) return [];
+    
+    return classrooms.filter((classroom) => {
+      const matchesFilter = filter === "all" || classroom.status === filter;
+      const matchesSearch = 
+        classroom.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        classroom.building.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      return matchesFilter && matchesSearch;
+    });
+  }, [classrooms, filter, searchQuery]);
 
-  const filteredClassrooms = classrooms.filter((classroom) => {
-    if (filter === "all") return true;
-    return classroom.status === filter;
-  });
-
-  const freeCount = classrooms.filter((c) => c.status === "free").length;
-  const occupiedCount = classrooms.filter((c) => c.status === "occupied").length;
+  const freeCount = classrooms?.filter((c) => c.status === "free").length || 0;
+  const occupiedCount = classrooms?.filter((c) => c.status === "occupied").length || 0;
+  const totalCount = classrooms?.length || 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -88,7 +43,7 @@ const Classrooms = () => {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="glass-card rounded-xl p-4">
-            <div className="text-2xl font-bold text-foreground">{classrooms.length}</div>
+            <div className="text-2xl font-bold text-foreground">{totalCount}</div>
             <div className="text-sm text-muted-foreground">Total Rooms</div>
           </div>
           <div className="glass-card rounded-xl p-4">
@@ -101,7 +56,7 @@ const Classrooms = () => {
           </div>
           <div className="glass-card rounded-xl p-4">
             <div className="text-2xl font-bold text-primary">
-              {Math.round((freeCount / classrooms.length) * 100)}%
+              {totalCount > 0 ? Math.round((freeCount / totalCount) * 100) : 0}%
             </div>
             <div className="text-sm text-muted-foreground">Availability</div>
           </div>
@@ -115,6 +70,8 @@ const Classrooms = () => {
               type="search"
               placeholder="Search by room name or building..."
               className="pl-10 rounded-xl border-border/50"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <div className="flex gap-2">
@@ -143,18 +100,38 @@ const Classrooms = () => {
         </div>
 
         {/* Classroom Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredClassrooms.map((classroom, index) => (
-            <div key={classroom.name} className="animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
-              <ClassroomCard {...classroom} />
-            </div>
-          ))}
-        </div>
-
-        {filteredClassrooms.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No classrooms found matching your filters</p>
+        {isLoading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-[200px] rounded-xl" />
+            ))}
           </div>
+        ) : (
+          <>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredClassrooms.map((classroom, index) => (
+                <div key={classroom.id} className="animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
+                  <ClassroomCard
+                    id={classroom.id}
+                    name={classroom.name}
+                    building={classroom.building}
+                    floor={classroom.floor}
+                    capacity={classroom.capacity}
+                    status={classroom.status}
+                    occupiedByName={classroom.occupied_by_name}
+                    occupiedUntil={classroom.occupied_until}
+                    notes={classroom.notes}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {filteredClassrooms.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No classrooms found matching your filters</p>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>
