@@ -14,6 +14,211 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          source: string
+          source_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description: string
+          id?: string
+          source: string
+          source_type: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          source?: string
+          source_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      classroom_history: {
+        Row: {
+          action: string
+          at: string
+          by_user_id: string
+          by_user_name: string
+          classroom_id: string
+          id: string
+          reason: string | null
+          until: string | null
+        }
+        Insert: {
+          action: string
+          at?: string
+          by_user_id: string
+          by_user_name: string
+          classroom_id: string
+          id?: string
+          reason?: string | null
+          until?: string | null
+        }
+        Update: {
+          action?: string
+          at?: string
+          by_user_id?: string
+          by_user_name?: string
+          classroom_id?: string
+          id?: string
+          reason?: string | null
+          until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classroom_history_classroom_id_fkey"
+            columns: ["classroom_id"]
+            isOneToOne: false
+            referencedRelation: "classrooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classroom_requests: {
+        Row: {
+          classroom_id: string
+          created_at: string
+          id: string
+          reason: string | null
+          requested_end: string
+          requested_start: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          classroom_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          requested_end: string
+          requested_start: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          classroom_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          requested_end?: string
+          requested_start?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classroom_requests_classroom_id_fkey"
+            columns: ["classroom_id"]
+            isOneToOne: false
+            referencedRelation: "classrooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classrooms: {
+        Row: {
+          building: string
+          capacity: number
+          created_at: string
+          floor: number
+          id: string
+          name: string
+          notes: string | null
+          occupied_by_id: string | null
+          occupied_by_name: string | null
+          occupied_until: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          building: string
+          capacity: number
+          created_at?: string
+          floor: number
+          id?: string
+          name: string
+          notes?: string | null
+          occupied_by_id?: string | null
+          occupied_by_name?: string | null
+          occupied_until?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          building?: string
+          capacity?: number
+          created_at?: string
+          floor?: number
+          id?: string
+          name?: string
+          notes?: string | null
+          occupied_by_id?: string | null
+          occupied_by_name?: string | null
+          occupied_until?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          attendees: number
+          created_at: string
+          created_by: string
+          date: string
+          host: string
+          id: string
+          image_url: string | null
+          location: string
+          time: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          attendees?: number
+          created_at?: string
+          created_by: string
+          date: string
+          host: string
+          id?: string
+          image_url?: string | null
+          location: string
+          time: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          attendees?: number
+          created_at?: string
+          created_by?: string
+          date?: string
+          host?: string
+          id?: string
+          image_url?: string | null
+          location?: string
+          time?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
