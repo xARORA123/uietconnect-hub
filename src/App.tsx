@@ -20,6 +20,8 @@ import Forbidden from "./pages/Forbidden";
 import Unauthorized from "./pages/Unauthorized";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserDashboard from "./pages/user/UserDashboard";
+import ViewFeedback from "./pages/admin/ViewFeedback";
+import ReportIssue from "./pages/ReportIssue";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,7 +54,9 @@ const App = () => (
             
             {/* Role-specific routes */}
             <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/feedback" element={<ProtectedRoute requiredRole="admin"><ViewFeedback /></ProtectedRoute>} />
             <Route path="/user/dashboard" element={<ProtectedRoute requiredRole="student"><UserDashboard /></ProtectedRoute>} />
+            <Route path="/report-issue" element={<ProtectedRoute requiredRole="student"><ReportIssue /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
