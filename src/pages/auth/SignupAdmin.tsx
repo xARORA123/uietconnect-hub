@@ -71,23 +71,14 @@ const SignupAdmin = () => {
         password: formData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/admin/dashboard`,
-          data: { full_name: formData.fullName }
+          data: { 
+            full_name: formData.fullName,
+            is_admin: 'true' // Trigger will use this to assign 'admin' role
+          }
         }
       });
 
       if (error) throw error;
-
-      // Assign admin role
-      if (data.user) {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({ user_id: data.user.id, role: 'admin' });
-        
-        if (roleError) {
-          console.error('Error assigning admin role:', roleError);
-          throw new Error('Failed to assign admin privileges');
-        }
-      }
 
       toast({ 
         title: "Admin account created!", 

@@ -70,24 +70,13 @@ const SignupUser = () => {
           emailRedirectTo: `${window.location.origin}/user/dashboard`,
           data: { 
             full_name: formData.fullName, 
-            student_id: formData.studentId.trim()
+            student_id: formData.studentId.trim(),
+            is_admin: 'false' // Trigger will use this to assign 'student' role
           }
         }
       });
 
       if (error) throw error;
-
-      // Assign student role
-      if (data.user) {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({ user_id: data.user.id, role: 'student' });
-        
-        if (roleError) {
-          console.error('Error assigning role:', roleError);
-          throw new Error('Failed to assign user role');
-        }
-      }
 
       toast({ 
         title: "Account created successfully!", 

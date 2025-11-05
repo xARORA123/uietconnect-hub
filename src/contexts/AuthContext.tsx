@@ -41,26 +41,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Fetch both profile and role in parallel
       const [profileResult, roleResult] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', userId).single(),
+        supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
         supabase.from('user_roles').select('role').eq('user_id', userId).maybeSingle()
       ]);
 
-      if (profileResult.error) {
+      if (profileResult.error && profileResult.error.code !== 'PGRST116') {
         console.error('Error fetching profile:', profileResult.error);
       } else {
         setProfile(profileResult.data);
       }
 
-      if (roleResult.error) {
+      if (roleResult.error && roleResult.error.code !== 'PGRST116') {
         console.error('Error fetching role:', roleResult.error);
         setRole(null);
       } else {
-        setRole(roleResult.data?.role || null);
+        // If no role exists, default to 'student' for backwards compatibility
+        const userRole = roleResult.data?.role || 'student';
+        setRole(userRole);
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
       setProfile(null);
-      setRole(null);
+      setRole('student'); // Default fallback
     } finally {
       setLoading(false);
     }
