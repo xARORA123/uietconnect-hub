@@ -35,7 +35,7 @@ export const ProtectedRoute = ({
     
     // If role doesn't match required role, deny access
     if (role !== requiredRole) {
-      return <Navigate to="/forbidden" replace />;
+      return <Navigate to="/unauthorized" replace />;
     }
   }
 
