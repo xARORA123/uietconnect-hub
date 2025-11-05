@@ -64,14 +64,16 @@ const Login = () => {
         description: `Welcome back${data.user.email ? `, ${data.user.email}` : ''}` 
       });
       
-      // Redirect based on actual role
-      if (roleData.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else if (roleData.role === 'teacher') {
-        navigate('/');
-      } else {
-        navigate('/user/dashboard');
-      }
+      // Wait a bit for AuthContext to update, then redirect based on role
+      setTimeout(() => {
+        if (roleData.role === 'admin') {
+          navigate('/admin/dashboard', { replace: true });
+        } else if (roleData.role === 'teacher') {
+          navigate('/', { replace: true });
+        } else {
+          navigate('/user/dashboard', { replace: true });
+        }
+      }, 100);
     } catch (error: any) {
       toast({ 
         title: "Login failed", 

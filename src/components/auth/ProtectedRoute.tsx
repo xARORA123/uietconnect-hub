@@ -16,16 +16,27 @@ export const ProtectedRoute = ({
 }: ProtectedRouteProps) => {
   const { user, role, loading } = useAuth();
 
+  // Always show loading spinner while authentication state is being determined
   if (loading) {
-    return <LoadingSpinner message="Verifying authentication..." />;
+    return <LoadingSpinner message="Verifying access..." />;
   }
 
+  // Redirect to login if authentication is required but user is not logged in
   if (requireAuth && !user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && role !== requiredRole) {
-    return <Navigate to="/unauthorized" replace />;
+  // Check role-based access
+  if (requiredRole) {
+    // If role hasn't loaded yet, show loading
+    if (role === null) {
+      return <LoadingSpinner message="Loading permissions..." />;
+    }
+    
+    // If role doesn't match required role, deny access
+    if (role !== requiredRole) {
+      return <Navigate to="/forbidden" replace />;
+    }
   }
 
   return <>{children}</>;

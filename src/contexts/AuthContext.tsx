@@ -37,80 +37,82 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfileAndRole = async (userId: string) => {
     try {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      // Fetch both profile and role in parallel
+      const [profileResult, roleResult] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userId).single(),
+        supabase.from('user_roles').select('role').eq('user_id', userId).maybeSingle()
+      ]);
 
-      if (profileError) throw profileError;
-      setProfile(profileData);
+      if (profileResult.error) {
+        console.error('Error fetching profile:', profileResult.error);
+      } else {
+        setProfile(profileResult.data);
+      }
+
+      if (roleResult.error) {
+        console.error('Error fetching role:', roleResult.error);
+        setRole(null);
+      } else {
+        setRole(roleResult.data?.role || null);
+      }
     } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
-
-  const fetchRole = async (userId: string) => {
-    try {
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (roleError) throw roleError;
-      setRole(roleData?.role || null);
-    } catch (error) {
-      console.error('Error fetching role:', error);
+      console.error('Error fetching user data:', error);
+      setProfile(null);
       setRole(null);
+    } finally {
+      setLoading(false);
     }
   };
 
   const refreshProfile = async () => {
     if (user) {
-      await fetchProfile(user.id);
-      await fetchRole(user.id);
+      setLoading(true);
+      await fetchProfileAndRole(user.id);
     }
   };
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
+    let mounted = true;
 
-        if (currentSession?.user) {
-          // Defer profile/role fetching
-          setTimeout(() => {
-            fetchProfile(currentSession.user.id);
-            fetchRole(currentSession.user.id);
-          }, 0);
-        } else {
-          setProfile(null);
-          setRole(null);
-        }
-
-        setLoading(false);
-      }
-    );
-
-    // Check for existing session
+    // Check for existing session first
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      if (!mounted) return;
+      
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
 
       if (currentSession?.user) {
-        fetchProfile(currentSession.user.id);
-        fetchRole(currentSession.user.id);
+        fetchProfileAndRole(currentSession.user.id);
+      } else {
+        setLoading(false);
       }
-
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        if (!mounted) return;
+
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+
+        if (currentSession?.user) {
+          setLoading(true);
+          fetchProfileAndRole(currentSession.user.id);
+        } else {
+          setProfile(null);
+          setRole(null);
+          setLoading(false);
+        }
+      }
+    );
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
