@@ -36,8 +36,9 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup/user" element={<SignupUser />} />
             <Route path="/signup/admin" element={<SignupAdmin />} />
-            <Route path="/forbidden" element={<Forbidden />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="/forbidden" element={<Forbidden />} />
+        <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="/access-denied" element={<Forbidden />} />
 
             {/* Protected routes */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
