@@ -8,6 +8,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { useAuth } from "@/contexts/AuthContext";
 import { RoleBadge } from "@/components/auth/RoleBadge";
 
+
+
 export const Navbar = () => {
   const { user, profile, role, signOut } = useAuth();
   const navigate = useNavigate();
@@ -129,3 +131,4 @@ export const Navbar = () => {
     </header>
   );
 };
+

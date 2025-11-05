@@ -2,6 +2,9 @@ import { DoorOpen, AlertCircle, Package, FolderGit2, MessageCircle } from "lucid
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 
+
+
+
 const actions = [
   {
     icon: DoorOpen,
@@ -35,14 +38,7 @@ const actions = [
     bg: "bg-info/10",
     path: "/projects",
   },
-  {
-    icon: MessageCircle,
-    label: "Chatbot",
-    description: "Get assistance",
-    color: "text-purple-600",
-    bg: "bg-purple-100",
-    path: "/chatbot",
-  },
+  
 ];
 
 export const QuickActions = () => {
